@@ -1,5 +1,5 @@
-﻿using FoodOrderingSystem.Domain.Entities;
-
+﻿using ChuksKitchen.Domain.Common;
+using ChuksKitchen.Domain.Enum;
 namespace ChuksKitchen.Domain.Entities;
 
 public class User : BaseEntity

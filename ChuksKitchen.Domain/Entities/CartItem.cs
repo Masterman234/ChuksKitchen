@@ -1,4 +1,6 @@
-﻿using ChuksKitchen.Domain.Entities;
+﻿using ChuksKitchen.Domain.Common;
+
+namespace ChuksKitchen.Domain.Entities;
 
 public class CartItem : BaseEntity
 {

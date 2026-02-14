@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using ChuksKitchen.Domain.Common;
+﻿using ChuksKitchen.Domain.Common;
 using ChuksKitchen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +11,7 @@ public class AppDbContext : DbContext
     {
     }
 
+    // DbSets
     public DbSet<User> Users => Set<User>();
     public DbSet<UserOtp> UserOtps => Set<UserOtp>();
     public DbSet<FoodItem> FoodItems => Set<FoodItem>();
@@ -24,45 +24,25 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1️⃣ Enforce One Cart Per User
-        modelBuilder.Entity<Cart>()
-            .HasOne(c => c.User)
-            .WithOne(u => u.Cart)
-            .HasForeignKey<Cart>(c => c.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // Apply all IEntityTypeConfiguration<T> in the assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        modelBuilder.Entity<Cart>()
-            .HasIndex(c => c.UserId)
-            .IsUnique();
-
-        // 2️⃣ Composite Unique Index for CartItem (Cart + FoodItem)
-        modelBuilder.Entity<CartItem>()
-            .HasIndex(ci => new { ci.CartId, ci.FoodItemId })
-            .IsUnique();
-
-        // 3️⃣ FoodItem → Creator (User)
-        modelBuilder.Entity<FoodItem>()
-            .HasOne(f => f.Creator)
-            .WithMany()
-            .HasForeignKey(f => f.CreatedBy)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // 4️⃣ Global Soft Delete Filter
+        // Apply global soft delete filter for all BaseEntity-derived entities
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
             {
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasQueryFilter(GetIsDeletedRestriction(entityType.ClrType));
+                var method = typeof(AppDbContext)
+                    .GetMethod(nameof(ApplySoftDeleteFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+                method.MakeGenericMethod(entityType.ClrType).Invoke(this, new object[] { modelBuilder });
             }
         }
     }
 
-    private static LambdaExpression GetIsDeletedRestriction(Type type)
+    // Generic method to apply soft delete filter
+    private void ApplySoftDeleteFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : BaseEntity
     {
-        var param = Expression.Parameter(type, "e");
-        var prop = Expression.Property(param, nameof(BaseEntity.IsDeleted));
-        var condition = Expression.Equal(prop, Expression.Constant(false));
-        return Expression.Lambda(condition, param);
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
     }
 }
