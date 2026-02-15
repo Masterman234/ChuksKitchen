@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChuksKitchen.API\ChuksKitchen.API.csproj" />
+    <ProjectReference Include="..\ChuksKitchen.Application\ChuksKitchen.Application.csproj" />
     <ProjectReference Include="..\ChuksKitchen.Domain\ChuksKitchen.Domain.csproj" />
   </ItemGroup>
 

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Xml;
 using ChuksKitchen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,6 +13,10 @@ internal class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
         builder.HasKey(ci => ci.Id);
 
         builder.Property(ci => ci.Quantity).IsRequired();
+
+        // Composite Unique Constraint: A cart cannot have the same food item twice
+        builder.HasIndex(ci => new { ci.CartId, ci.FoodItemId }).IsUnique();
+
 
         builder.HasOne(ci => ci.Cart)
             .WithMany(c => c.Items)
