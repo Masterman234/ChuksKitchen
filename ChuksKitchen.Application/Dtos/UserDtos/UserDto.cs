@@ -1,5 +1,9 @@
-﻿namespace ChuksKitchen.Application.Dtos.UserDtos;
+﻿using ChuksKitchen.Domain.Enum;
 
-public record UserDto( Guid Id, string Name, string Email, string Role);
+namespace ChuksKitchen.Application.Dtos.UserDtos;
 
-public record UserCreateDto(string Email, string? Phone, string Password, string Role);
+public record UserDto( Guid Id, string Name, string Email, UserRole Role);
+
+public record UserCreateDto(string Email, string? Phone, string Password, UserRole Role);
+
+public record UserUpdateDto(string Name, string Email, UserRole Role);

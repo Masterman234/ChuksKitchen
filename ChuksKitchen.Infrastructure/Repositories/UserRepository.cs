@@ -1,4 +1,5 @@
-﻿using ChuksKitchen.Application.Interfaces.IRepositories;
+﻿using System.Threading.Tasks;
+using ChuksKitchen.Application.Interfaces.IRepositories;
 using ChuksKitchen.Domain.Entities;
 using ChuksKitchen.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,9 +17,11 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByIdAsync(Guid id)
     {
-       return await _context.Users.FindAsync(id);
+        return await _context.Users
+      .FirstOrDefaultAsync(u => u.Id == id);
+
     }
-       
+
 
     public async Task<User?> GetByEmailAsync(string email)
     {
@@ -30,6 +33,7 @@ public class UserRepository : IUserRepository
     {
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
+       
     }
         
 
@@ -37,19 +41,16 @@ public class UserRepository : IUserRepository
     {
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
+  
+       
     }
          
 
     public async Task Remove(User user)
     {
-        _context.Users.Remove(user);
+      _context.Users.Remove(user);
         await _context.SaveChangesAsync();
-    }
-        
-
-    public async Task SaveChangesAsync()
-    {
-        await _context.SaveChangesAsync();
+   
     }
 
 }
