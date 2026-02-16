@@ -19,7 +19,7 @@ public class CartRepository : ICartRepository
     {
         return await _context.Carts.FindAsync(id);
     }
-        
+
 
     public async Task<Cart?> GetCartWithItemsAsync(Guid userId)
     {
@@ -34,26 +34,27 @@ public class CartRepository : ICartRepository
         await _context.Carts.AddAsync(cart);
         await _context.SaveChangesAsync();
     }
-       
+
 
     public async Task Update(Cart cart)
     {
         _context.Carts.Update(cart);
         await _context.SaveChangesAsync();
     }
-  
+
 
     public async Task Remove(Cart cart)
     {
-         _context.Carts.Remove(cart);
+        _context.Carts.Remove(cart);
         await _context.SaveChangesAsync();
     }
-       
+
 
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
     }
-       
+
 }
+
 

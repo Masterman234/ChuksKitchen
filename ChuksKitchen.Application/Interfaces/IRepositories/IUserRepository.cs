@@ -5,8 +5,10 @@ namespace ChuksKitchen.Application.Interfaces.IRepositories;
 
 public interface IUserRepository
 {
+    Task<List<User?>> GetAllUsersAsync();
     Task<User?> GetByIdAsync(Guid id);
     Task<User?> GetByEmailAsync(string email);
+    Task<User?> GetByPhone(string phone);
     Task AddAsync(User user);
     Task Update(User user);
     Task Remove(User user);

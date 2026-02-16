@@ -1,7 +1,11 @@
-﻿namespace ChuksKitchen.Application.Interfaces.IServices;
+﻿using ChuksKitchen.Application.Common;
+using ChuksKitchen.Application.Dtos.UserOtpDtos;
+
+namespace ChuksKitchen.Application.Interfaces.IServices;
 
 public interface IUserOtpService
 {
-    Task GenerateOtpAsync(Guid userId);
-    Task<bool> VerifyOtpAsync(Guid userId, string code);
+    Task<BaseResponseModel<UserOtpDto>> GenerateOtpAsync(CreateUserOtpDto request);
+
+    Task<BaseResponseModel<string>> ValidateOtpAsync(Guid userId, string code);
 }

@@ -1,6 +1,9 @@
-using System;
-using ChuksKitchen.Application.Interfaces.IRepositories;
+using ChuksKitchen.Application.Interfaces.IIdentity;
+using ChuksKitchen.Application.Interfaces.IServices;
+using ChuksKitchen.Application.Services;
+using ChuksKitchen.Infrastructure.Identity;
 using ChuksKitchen.Infrastructure.Persistence;
+using ChuksKitchen.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +18,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Services
+builder.Services.AddScoped<IUserOtpService, UserOtpService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, FakeEmailService>();
+
+
+
 //Repositories
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IOtpGenerator, OtpGenerator>();
+
+
 
 
 var app = builder.Build();

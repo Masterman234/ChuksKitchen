@@ -10,6 +10,10 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.Id);
 
+        builder.Property(u => u.FullName)
+           .IsRequired()
+           .HasMaxLength(100);
+
         builder.Property(u => u.Email)
             .IsRequired()
             .HasMaxLength(320);
@@ -29,7 +33,7 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasOne(u => u.Cart)
             .WithOne(c => c.User)
-            .HasForeignKey<Domain.Entities.Cart>(c => c.UserId)
+            .HasForeignKey<Cart>(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(u => u.Orders)

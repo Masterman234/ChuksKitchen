@@ -27,7 +27,13 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
-       
+
+
+    public async Task<User?> GetByPhone(string phone)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Phone == phone);
+    }
+
 
     public async Task AddAsync(User user)
     {
@@ -53,5 +59,10 @@ public class UserRepository : IUserRepository
    
     }
 
+    public async Task<List<User?>> GetAllUsersAsync()
+    {
+         return await _context.Users.ToListAsync();
+            
+    }
 }
 
