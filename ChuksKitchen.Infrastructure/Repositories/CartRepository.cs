@@ -49,12 +49,6 @@ public class CartRepository : ICartRepository
         await _context.SaveChangesAsync();
     }
 
-
-    public async Task SaveChangesAsync()
-    {
-        await _context.SaveChangesAsync();
-    }
-
 }
 
 

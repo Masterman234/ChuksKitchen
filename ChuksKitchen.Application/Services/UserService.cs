@@ -118,27 +118,6 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<BaseResponseModel<UserDto?>> GetUserByIdAsync(Guid id)
-    {
-        try
-        {
-            var user = await _userRepository.GetByIdAsync(id);
-            {
-                if (user == null)
-                {
-                    return BaseResponseModel<UserDto?>.FailureResponse("User not found.");
-                }
-            }
-            var userDto = new UserDto(user.Id, user.FullName, user.Email, user.Role);
-            return BaseResponseModel<UserDto?>.SuccessResponse(userDto, "User retrieved successfully.");
-
-        }
-        catch (Exception)
-        {
-
-            return BaseResponseModel<UserDto?>.FailureResponse("An error occurred while retrieving the user.");
-        }
-    }
 
 
     public async Task<BaseResponseModel<IEnumerable<UserDto>>> GetAllUsersAsync()
@@ -213,6 +192,29 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<BaseResponseModel<UserDto?>> GetUserByIdAsync(Guid id)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return BaseResponseModel<UserDto>.FailureResponse("User not found");
+            }
+
+            var userDto = new UserDto(
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.CreatedAt = 
+                )
 
 
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
 }

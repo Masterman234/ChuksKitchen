@@ -1,12 +1,14 @@
-﻿using ChuksKitchen.Application.Dtos.FoodItemDtos;
+﻿using ChuksKitchen.Application.Common;
+using ChuksKitchen.Application.Dtos.FoodItemDtos;
 
 namespace ChuksKitchen.Application.Interfaces.IServices;
 
 public interface IFoodItemService
 {
-    Task<FoodItemDto> AddFoodItemAsync(FoodItemCreateDto dto, Guid creatorId);
-    Task<IEnumerable<FoodItemDto>> GetAllFoodItemsAsync();
-    Task<FoodItemDto?> GetFoodItemByIdAsync(Guid id);
-    Task UpdateFoodItemAsync(Guid id, FoodItemUpdateDto dto);
-    Task DeleteFoodItemAsync(Guid id);
+    Task<BaseResponseModel<FoodItemDto>> AddFoodItemAsync(FoodItemCreateDto request, Guid adminUserId);
+    Task<BaseResponseModel<IEnumerable<FoodItemDto>>> GetAllFoodItemsAsync();
+    Task<BaseResponseModel<IEnumerable<FoodItemDto>>> GetAvailableAsync();
+    Task<BaseResponseModel<FoodItemDto?>> GetFoodItemByIdAsync(Guid foodId);
+    Task<BaseResponseModel<FoodItemDto>>UpdateFoodItemAsync(Guid foodId, FoodItemUpdateDto dto, Guid adminUserId);
+    Task<BaseResponseModel<bool>>DeleteFoodItemAsync(Guid foodId, Guid adminUserId);
 }
