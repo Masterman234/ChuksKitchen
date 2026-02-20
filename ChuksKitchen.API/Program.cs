@@ -1,8 +1,10 @@
 using ChuksKitchen.Application.Interfaces.IIdentity;
+using ChuksKitchen.Application.Interfaces.IRepositories;
 using ChuksKitchen.Application.Interfaces.IServices;
 using ChuksKitchen.Application.Services;
 using ChuksKitchen.Infrastructure.Identity;
 using ChuksKitchen.Infrastructure.Persistence;
+using ChuksKitchen.Infrastructure.Repositories;
 using ChuksKitchen.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,11 +24,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserOtpService, UserOtpService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, FakeEmailService>();
+builder.Services.AddScoped<IFoodItemService, FoodItemService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 
 //Repositories
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IUserOtpRepository, UserOtpRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IFoodItemRepository, FoodItemRepository>();
+
 builder.Services.AddScoped<IOtpGenerator, OtpGenerator>();
 
 

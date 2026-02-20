@@ -31,17 +31,29 @@ public class UserService : IUserService
                 return (BaseResponseModel<UserDto>.FailureResponse("Invalid user data."));
             }
 
-            //Find user by email or phone
-            var existByEmail = await _userRepository.GetByEmailAsync(request.Email);
-            if (existByEmail != null)
+            // Ensure at least one identifier is provided
+            if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.Phone))
             {
-                return BaseResponseModel<UserDto>.FailureResponse("Email is already registered.");
+                return BaseResponseModel<UserDto>.FailureResponse("Either Email or Phone must be provided.");
             }
 
-            var existByPhone = await _userRepository.GetByPhone(request.Phone);
-            if (existByPhone != null)
+            // Check if email exists (only if provided)
+            if (!string.IsNullOrWhiteSpace(request.Email))
             {
-                return BaseResponseModel<UserDto>.FailureResponse("Phone number is already registered.");
+                var existByEmail = await _userRepository.GetByEmailAsync(request.Email);
+                if (existByEmail != null)
+                {
+                    return BaseResponseModel<UserDto>.FailureResponse("Email is already registered.");
+                } 
+            }
+            // Check if phone exists (only if provided)
+            if (!string.IsNullOrWhiteSpace(request.Phone))
+            {
+                var existByPhone = await _userRepository.GetByPhone(request.Phone);
+                if (existByPhone != null)
+                {
+                    return BaseResponseModel<UserDto>.FailureResponse("Phone number is already registered.");
+                } 
             }
 
             var user = new User
@@ -59,22 +71,38 @@ public class UserService : IUserService
             await _userRepository.AddAsync(user);
 
             //Create Cart automatically for the user
-            var cart = new Cart
-            {
-                UserId = user.Id,
-                CreatedAt = DateTime.UtcNow,
-            };
+            await _cartRepository.AddAsync(new Cart { UserId = user.Id, CreatedAt = DateTime.UtcNow });
 
-            await _cartRepository.AddAsync(cart);
+            // Decide where to send OTP (prefer email if both exist)
+            string? otpDestination = null;
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                otpDestination = user.Email;
+            }
+            else if (!string.IsNullOrWhiteSpace(user.Phone))
+            {
+                otpDestination = user.Phone;
+            }
+
+            if (string.IsNullOrWhiteSpace(otpDestination))
+            {
+                return BaseResponseModel<UserDto>.FailureResponse("No email or phone available for OTP.");
+            }
+
+            Console.WriteLine("CALLING OTP SERVICE NOW");
 
             //Generate OTP for email or phone verification via OtpService
-            await _userOtpService.GenerateOtpAsync(new CreateUserOtpDto(user.Id));
+            var otpResult = await _userOtpService.GenerateOtpAsync(new CreateUserOtpDto(user.Id, otpDestination));
 
+            if (!otpResult.Success)
+            {
+                return BaseResponseModel<UserDto>.FailureResponse(otpResult.Message);
+            }
 
-            var dto = new UserDto(user.Id, user.FullName, user.Email, user.Role);
+            var dto = new UserDto(user.Id, user.FullName, user.Email, user.Phone, user.Role);
 
             return BaseResponseModel<UserDto>.SuccessResponse(dto, "User registered successfully.");
-
 
         }
         catch (Exception)
@@ -88,14 +116,31 @@ public class UserService : IUserService
     {
         try
         {
-            //Find user by email or phone
-            var user = await _userRepository.GetByEmailAsync(emailOrPhone) ?? await _userRepository.GetByPhone(emailOrPhone);
+            if (string.IsNullOrWhiteSpace(emailOrPhone))
             {
-                if (user == null)
-                {
-                    return BaseResponseModel<bool>.FailureResponse("User not found.");
-                }
+                return BaseResponseModel<bool>.FailureResponse("Email or phone must be provided.");
             }
+
+            // Find user by email or phone
+            User? user = null;
+
+            if (emailOrPhone.Contains("@"))
+            {
+                // Likely an email
+                user = await _userRepository.GetByEmailAsync(emailOrPhone);
+            }
+            else
+            {
+                // Likely a phone
+                user = await _userRepository.GetByPhone(emailOrPhone);
+            }
+
+            if (user == null)
+            {
+                return BaseResponseModel<bool>.FailureResponse("User not found.");
+            }
+
+
             var otpValidation = await _userOtpService.ValidateOtpAsync(user.Id, otpCode);
             if (!otpValidation.Success)
             {
@@ -125,7 +170,7 @@ public class UserService : IUserService
         try
         {
             var users = await _userRepository.GetAllUsersAsync();
-            var userDtos = users.Select(u => new UserDto(u.Id, u.FullName, u.Email, u.Role));
+            var userDtos = users.Select(u => new UserDto(u.Id, u.FullName, u.Email,u.Phone, u.Role));
 
             return BaseResponseModel<IEnumerable<UserDto>>.SuccessResponse(userDtos, "Users retrieved successfully.");
         }
@@ -201,20 +246,21 @@ public class UserService : IUserService
             {
                 return BaseResponseModel<UserDto>.FailureResponse("User not found");
             }
-
+            // Map User entity to UserDto
             var userDto = new UserDto(
                 user.Id,
                 user.FullName,
                 user.Email,
-                user.CreatedAt = 
-                )
+                user.Phone,
+                user.Role
+                );
 
-
+            return BaseResponseModel<UserDto>.SuccessResponse(userDto, "User retrieved successfully.");
         }
         catch (Exception)
         {
-
-            throw;
+            return BaseResponseModel<UserDto>.FailureResponse("An error occurred while retrieving the user.");
         }
     }
+
 }

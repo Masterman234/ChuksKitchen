@@ -49,6 +49,22 @@ public class CartRepository : ICartRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<bool> ClearCartAsync(Cart cart)
+    {
+        if (cart == null || !cart.Items.Any())
+        {
+            return false;
+        } 
+
+        _context.CartItems.RemoveRange(cart.Items);
+
+        cart.Items.Clear();
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
 }
 
 

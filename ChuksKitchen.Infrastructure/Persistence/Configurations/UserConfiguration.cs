@@ -15,12 +15,13 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
            .HasMaxLength(100);
 
         builder.Property(u => u.Email)
-            .IsRequired()
+            .IsRequired(false)
             .HasMaxLength(320);
 
         builder.HasIndex(u => u.Email).IsUnique();
 
         builder.Property(u => u.Phone)
+              .IsRequired(false)
             .HasMaxLength(32);
 
         builder.Property(u => u.IsVerified).HasDefaultValue(false);

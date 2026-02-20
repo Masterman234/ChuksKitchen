@@ -8,6 +8,5 @@ public interface IOrderRepository
     Task<Order?> GetOrderWithItemsAsync(Guid orderId);
     Task<List<Order>> GetUserOrdersAsync(Guid userId);
     Task AddAsync(Order order);
-    void Update(Order order);
-    Task SaveChangesAsync();
+    Task Update(Order order);
 }

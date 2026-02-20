@@ -45,7 +45,7 @@ public class UserOtpService : IUserOtpService
                 IsUsed = false
             };
             await _userOtpRepository.AddAsync(userOtp);
-            await _emailService.SendOtpAsync(user.Email, code);
+            await _emailService.SendOtpAsync(request.Destination, code);
 
             var userOtpDto = new UserOtpDto(
                userOtp.Id,
