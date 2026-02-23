@@ -115,7 +115,7 @@ Data deletion - Soft delete used
 
 ## 4.1 Entity Relationship Diagram
 
-![alt text](erdd.png)
+![alt text](erd-new.png)
 
 ### 4.2 Relationship Explanation
 
