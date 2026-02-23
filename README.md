@@ -6,7 +6,7 @@ ChuksKitchen is a RESTful backend API designed to power an online food ordering 
 The system enables customers to register, verify their accounts using OTP, browse food items,
 manage carts, place orders, and participate in a referral system.
 
-## The backend follows a layered architecture:
+The backend follows a layered architecture:
 
 - Domain Layer – Entities and business rules
 - Application Layer – Services and interfaces
@@ -17,17 +17,17 @@ manage carts, place orders, and participate in a referral system.
 
 ## 1.2 End-to-End System Flow
 
-1. From a high-level perspective:
-2. A user registers using email or  
+ From a high-level perspective:
+1. A user registers using email or  
    phone.
-3. The system generates and sends an
+2. The system generates and sends an
    OTP.
-4. The user verifies their account.
-5. The user browses available food
+3. The user verifies their account.
+4. The user browses available food
    items.
-6. The user adds items to their cart.
-7. The user places an order.
-   The system stores the order and preserves pricing history.
+5. The user adds items to their cart.
+6. The user places an order.
+7. The system stores the order and preserves pricing history.
 
 ## Admins can:
 
@@ -101,22 +101,22 @@ PriceAtOrder ensures historical pricing integrity.
 OrderItem separates transactional data from menu data.
 Soft delete prevents accidental data loss.
 
-## 3. Edge Case Handling
+## Edge Case Handling
 
-Scenario Handling Strategy
-Duplicate email or phone - Registration rejected
-Invalid referral code - Registration rejected
-Expired OTP - Verification fails
-OTP reuse - Blocked via IsUsed flag
-Food marked unavailable - Cannot add to cart
-Price change after order - OrderItem keeps original price
-Multiple OTP requests - Multiple records supported
-Data deletion - Soft delete used
+| Scenario | Handling Strategy |
+|----------|-------------------|
+| Duplicate email or phone | Registration rejected |
+| Invalid referral code | Registration rejected |
+| Expired OTP | Verification fails |
+| OTP reuse | Blocked via IsUsed flag |
+| Food marked unavailable | Cannot add to cart |
+| Price change after order | OrderItem keeps original price |
+| Multiple OTP requests | Multiple records supported |
+| Data deletion | Soft delete used |
 
 ## 4.1 Entity Relationship Diagram
 
-![ERD](./Diagram/erd111.png)
-![Erd diagram](Diagram/ChukskitchenERD.png)
+![ERD](./Diagram/erd-crt.png)
 
 ### 4.2 Relationship Explanation
 
@@ -180,6 +180,14 @@ Introduce message queue for order processing
 Implement JWT authentication
 Add rate limiting for OTP requests
 Add role-based authorization middleware
+
+## Project Structure
+ChuksKitchen
+│
+├── Domain
+├── Application
+├── Infrastructure
+└── API
 
 ## 7. Technology Stack
 

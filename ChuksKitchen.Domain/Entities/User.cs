@@ -22,4 +22,5 @@ public class User : BaseEntity
     public Cart? Cart { get; set; }
     public ICollection<Order> Orders { get; set; } = new List<Order>();
     public ICollection<User> ReferredUsers { get; set; } = new List<User>(); // Users this user referred
+    public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 }

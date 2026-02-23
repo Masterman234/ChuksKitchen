@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChuksKitchen.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260220203203_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260223145822_AddedRatingEntity")]
+    partial class AddedRatingEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -195,6 +195,44 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("ChuksKitchen.Domain.Entities.Rating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FoodItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoodItemId");
+
+                    b.HasIndex("UserId", "FoodItemId")
+                        .IsUnique();
+
+                    b.ToTable("Ratings", (string)null);
+                });
+
             modelBuilder.Entity("ChuksKitchen.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -363,6 +401,25 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("ChuksKitchen.Domain.Entities.Rating", b =>
+                {
+                    b.HasOne("ChuksKitchen.Domain.Entities.FoodItem", "FoodItem")
+                        .WithMany("Ratings")
+                        .HasForeignKey("FoodItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ChuksKitchen.Domain.Entities.User", "User")
+                        .WithMany("Ratings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FoodItem");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ChuksKitchen.Domain.Entities.User", b =>
                 {
                     b.HasOne("ChuksKitchen.Domain.Entities.User", "ReferredByUser")
@@ -394,6 +451,8 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.Navigation("CartItems");
 
                     b.Navigation("OrderItems");
+
+                    b.Navigation("Ratings");
                 });
 
             modelBuilder.Entity("ChuksKitchen.Domain.Entities.Order", b =>
@@ -408,6 +467,8 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Otps");
+
+                    b.Navigation("Ratings");
 
                     b.Navigation("ReferredUsers");
                 });

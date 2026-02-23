@@ -75,4 +75,12 @@ public class UserRepository : IUserRepository
         return await _context.Users
        .FirstOrDefaultAsync(u => u.ReferralCode == code);
     }
+
+    public async Task<User?> GetByIdWithOrdersAsync(Guid id)
+    {
+        return await _context.Users
+            .Include(u => u.Orders)
+                .ThenInclude(o => o.Items)
+            .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+    }
 }

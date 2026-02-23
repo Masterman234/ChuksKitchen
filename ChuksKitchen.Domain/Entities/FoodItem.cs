@@ -20,5 +20,6 @@ public class FoodItem : BaseEntity
     public User Creator { get; set; } = default!;
     public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 }
 
