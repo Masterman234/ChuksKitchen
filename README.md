@@ -116,7 +116,7 @@ Soft delete prevents accidental data loss.
 
 ## 4.1 Entity Relationship Diagram
 
-![ERD](./Diagram/erd-crt.png)
+![ERD](./Diagram/erd-correction.png)
 
 ### 4.2 Relationship Explanation
 
