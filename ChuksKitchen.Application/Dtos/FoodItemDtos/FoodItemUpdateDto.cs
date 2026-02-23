@@ -1,3 +1,19 @@
-﻿namespace ChuksKitchen.Application.Dtos.FoodItemDtos;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
-public record FoodItemUpdateDto(string Name, decimal Price, string? Description, bool IsAvailable);
+namespace ChuksKitchen.Application.Dtos.FoodItemDtos;
+
+public record FoodItemUpdateDto(
+     [Required]
+    [MaxLength(100)]
+    string Name,
+
+    [Required]
+    decimal Price,
+
+    [MaxLength(500)]
+    string? Description,
+
+    IFormFile Image,
+     [Required]
+    bool IsAvailable = true);

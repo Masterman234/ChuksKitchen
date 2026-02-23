@@ -1,4 +1,15 @@
-﻿namespace ChuksKitchen.Application.Dtos.OrderDtos;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record OrderItemDto(Guid FoodItemId, string FoodItemName, decimal PriceAtOrder, int Quantity);
+namespace ChuksKitchen.Application.Dtos.OrderDtos;
+
+public record OrderItemDto(
+    [Required]
+    Guid FoodItemId,
+    [Required]
+    [MaxLength(200)]
+    string FoodItemName,
+    [Required]
+    decimal PriceAtOrder,
+    [Required]
+    int Quantity);
 

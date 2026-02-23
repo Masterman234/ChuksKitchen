@@ -1,3 +1,5 @@
-﻿namespace ChuksKitchen.Application.Dtos.FoodItemDtos;
+﻿using Microsoft.AspNetCore.Http;
 
-public class FoodItemDto(Guid Id, string Name, decimal Price, string? Description, bool IsAvailable);
+namespace ChuksKitchen.Application.Dtos.FoodItemDtos;
+
+public record FoodItemDto(Guid Id, string Name, decimal Price, string? Description, string? ImageUrl, bool IsAvailable);

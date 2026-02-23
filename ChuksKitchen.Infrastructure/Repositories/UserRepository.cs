@@ -18,6 +18,8 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByIdAsync(Guid id)
     {
         return await _context.Users
+            .Include(u => u.ReferredByUser)
+            .Include(u => u.ReferredUsers)
       .FirstOrDefaultAsync(u => u.Id == id);
 
     }
@@ -61,7 +63,16 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User?>> GetAllUsersAsync()
     {
-         return await _context.Users.ToListAsync();
+         return await _context.Users
+            .Include(u => u.ReferredByUser)
+            .Include(u => u.ReferredUsers)
+            .ToListAsync();
             
+    }
+
+    public async Task<User?> GetByReferralCodeAsync(string code)
+    {
+        return await _context.Users
+       .FirstOrDefaultAsync(u => u.ReferralCode == code);
     }
 }

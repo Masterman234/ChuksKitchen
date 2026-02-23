@@ -2,8 +2,10 @@ using ChuksKitchen.Application.Interfaces.IIdentity;
 using ChuksKitchen.Application.Interfaces.IRepositories;
 using ChuksKitchen.Application.Interfaces.IServices;
 using ChuksKitchen.Application.Services;
+using ChuksKitchen.Infrastructure.Cloudinarys;
 using ChuksKitchen.Infrastructure.Identity;
 using ChuksKitchen.Infrastructure.Persistence;
+using ChuksKitchen.Infrastructure.Persistence.Seed;
 using ChuksKitchen.Infrastructure.Repositories;
 using ChuksKitchen.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +29,10 @@ builder.Services.AddScoped<IEmailService, FakeEmailService>();
 builder.Services.AddScoped<IFoodItemService, FoodItemService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddSingleton<ICloudinaryService,CloudinaryService>();
+
 
 
 
@@ -56,5 +62,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(context);
+}
 
 app.Run();

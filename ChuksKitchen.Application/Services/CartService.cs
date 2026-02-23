@@ -32,7 +32,7 @@ public class CartService : ICartService
                 return BaseResponseModel<CartDto>.FailureResponse("Food item not found or unavailable.");
             }
 
-            var cart = await _cartRepository.GetByIdAsync(userId);
+            var cart = await _cartRepository.GetByUserIdAsync(userId);
             if (cart == null)
             {
                 cart = new Cart { UserId = userId };

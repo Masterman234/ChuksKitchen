@@ -10,6 +10,8 @@ public class FoodItem : BaseEntity
 
     public string? Description { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     public bool IsAvailable { get; set; } = true;
 
     public Guid CreatedBy { get; set; }

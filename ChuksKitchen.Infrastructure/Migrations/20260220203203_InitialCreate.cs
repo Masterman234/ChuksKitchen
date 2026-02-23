@@ -16,11 +16,14 @@ namespace ChuksKitchen.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 320, nullable: true),
                     Phone = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
                     Role = table.Column<int>(type: "INTEGER", nullable: false),
                     IsVerified = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
+                    ReferralCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ReferredByUserId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
@@ -28,6 +31,12 @@ namespace ChuksKitchen.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Users_ReferredByUserId",
+                        column: x => x.ReferredByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -59,6 +68,7 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: true),
+                    ImageUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     IsAvailable = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
                     CreatedBy = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -205,6 +215,11 @@ namespace ChuksKitchen.Infrastructure.Migrations
                 column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FoodItems_Name",
+                table: "FoodItems",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_FoodItemId",
                 table: "OrderItems",
                 column: "FoodItemId");
@@ -229,6 +244,11 @@ namespace ChuksKitchen.Infrastructure.Migrations
                 table: "Users",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_ReferredByUserId",
+                table: "Users",
+                column: "ReferredByUserId");
         }
 
         /// <inheritdoc />

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using ChuksKitchen.Application.Interfaces.IRepositories;
+﻿using ChuksKitchen.Application.Interfaces.IRepositories;
 using ChuksKitchen.Domain.Entities;
 using ChuksKitchen.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +64,12 @@ public class CartRepository : ICartRepository
         return true;
     }
 
+    public async Task<Cart?> GetByUserIdAsync(Guid userId)
+    {
+        return await _context.Carts
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+    }
 }
 
 

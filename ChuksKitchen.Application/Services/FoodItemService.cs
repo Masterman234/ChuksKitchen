@@ -6,18 +6,20 @@ using ChuksKitchen.Application.Interfaces.IServices;
 using ChuksKitchen.Domain.Entities;
 using ChuksKitchen.Domain.Enum;
 
+
 namespace ChuksKitchen.Application.Services;
 
 public class FoodItemService : IFoodItemService
 {
     private readonly IFoodItemRepository _foodItemRepository;
     private readonly IUserRepository _userRepository;
+    private readonly ICloudinaryService _cloudinaryService;
 
-    public FoodItemService(IFoodItemRepository foodItemRepository, IUserRepository userRepository)
+    public FoodItemService(IFoodItemRepository foodItemRepository, IUserRepository userRepository, ICloudinaryService cloudinaryService)
     {
         _foodItemRepository = foodItemRepository;
         _userRepository = userRepository;
-
+        _cloudinaryService = cloudinaryService;
     }
 
     public async Task<BaseResponseModel<FoodItemDto>> AddFoodItemAsync(FoodItemCreateDto request, Guid adminUserId)
@@ -47,12 +49,20 @@ public class FoodItemService : IFoodItemService
                 return BaseResponseModel<FoodItemDto>.FailureResponse("Food item with this name already exists.");
             }
 
+            // Upload image to Cloudinary
+            string? imageUrl = null;
+            if (request.Image != null)
+            {
+                imageUrl = await _cloudinaryService.UploadAsync(request.Image);
+            }
+
             var item = new FoodItem
             {
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 Price = request.Price,
                 Description = request.Description,
+                ImageUrl = imageUrl,
                 IsAvailable = request.IsAvailable,
                 CreatedBy = adminUserId,
                 CreatedAt = DateTime.UtcNow,
@@ -61,7 +71,7 @@ public class FoodItemService : IFoodItemService
 
             await _foodItemRepository.AddAsync(item);
 
-            var itemDto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.IsAvailable);
+            var itemDto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.ImageUrl, item.IsAvailable);
             return BaseResponseModel<FoodItemDto>.SuccessResponse(itemDto, "Food item created successfully.");
         }
         catch (Exception)
@@ -76,7 +86,7 @@ public class FoodItemService : IFoodItemService
         try
         {
             var items = await _foodItemRepository.GetAllAsync();
-            var dtos = items.Select(f => new FoodItemDto(f.Id, f.Name, f.Price, f.Description, f.IsAvailable));
+            var dtos = items.Select(f => new FoodItemDto(f.Id, f.Name, f.Price, f.Description, f.ImageUrl, f.IsAvailable));
             return BaseResponseModel<IEnumerable<FoodItemDto>>.SuccessResponse(dtos, "Food items retrieved successfully.");
         }
         catch (Exception)
@@ -93,7 +103,7 @@ public class FoodItemService : IFoodItemService
         {
 
             var items = await _foodItemRepository.GetAvailableAsync();
-            var dtos = items.Select(f => new FoodItemDto(f.Id, f.Name, f.Price, f.Description, f.IsAvailable));
+            var dtos = items.Select(f => new FoodItemDto(f.Id, f.Name, f.Price, f.Description, f.ImageUrl, f.IsAvailable));
             return BaseResponseModel<IEnumerable<FoodItemDto>>.SuccessResponse(dtos, "Available food items retrieved successfully.");
         }
         catch (Exception)
@@ -113,7 +123,7 @@ public class FoodItemService : IFoodItemService
                 return BaseResponseModel<FoodItemDto>.FailureResponse("Food item not found.");
             }
 
-            var dto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.IsAvailable);
+            var dto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.ImageUrl, item.IsAvailable);
             return BaseResponseModel<FoodItemDto>.SuccessResponse(dto, "Food item retrieved successfully.");
         }
         catch (Exception)
@@ -147,9 +157,15 @@ public class FoodItemService : IFoodItemService
             item.IsAvailable = dto.IsAvailable;
             item.UpdatedAt = DateTime.UtcNow;
 
+            // Upload new image if provided
+            if (dto.Image != null)
+            {
+                item.ImageUrl = await _cloudinaryService.UploadAsync(dto.Image);
+            }
+
             await _foodItemRepository.UpdateAsync(item);
 
-            var itemDto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.IsAvailable);
+            var itemDto = new FoodItemDto(item.Id, item.Name, item.Price, item.Description, item.ImageUrl, item.IsAvailable);
             return BaseResponseModel<FoodItemDto>.SuccessResponse(itemDto, "Food item updated successfully.");
         }
         catch (Exception)

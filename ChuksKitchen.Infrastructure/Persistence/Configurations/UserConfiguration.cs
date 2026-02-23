@@ -10,9 +10,13 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.Id);
 
-        builder.Property(u => u.FullName)
+        builder.Property(u => u.FirstName)
            .IsRequired()
            .HasMaxLength(100);
+
+        builder.Property(u => u.LastName)
+          .IsRequired()
+          .HasMaxLength(100);
 
         builder.Property(u => u.Email)
             .IsRequired(false)
@@ -25,6 +29,19 @@ internal class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(32);
 
         builder.Property(u => u.IsVerified).HasDefaultValue(false);
+
+        builder.Property(u => u.ReferralCode)
+           .IsRequired()
+           .HasMaxLength(10);
+
+        builder.Property(u => u.ReferredByUserId)
+            .IsRequired(false);
+
+        // Self-reference for referral relationship
+        builder.HasOne(u => u.ReferredByUser)          // Navigation property for who referred this user
+               .WithMany(u => u.ReferredUsers)        // Navigation property for users referred
+               .HasForeignKey(u => u.ReferredByUserId)
+               .OnDelete(DeleteBehavior.SetNull);
 
         // Relationships
         builder.HasMany(u => u.Otps)

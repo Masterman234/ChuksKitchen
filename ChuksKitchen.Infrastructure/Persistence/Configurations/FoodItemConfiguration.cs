@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using ChuksKitchen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,7 +22,13 @@ internal class FoodItemConfiguration : IEntityTypeConfiguration<FoodItem>
         builder.Property(fi => fi.Description)
             .HasMaxLength(2000);
 
+        builder.Property(fi => fi.ImageUrl)
+              .HasMaxLength(500);
+
         builder.Property(fi => fi.IsAvailable).HasDefaultValue(true);
+
+        // Add index on Name
+        builder.HasIndex(fi => fi.Name);
 
         builder.HasOne(fi => fi.Creator)
             .WithMany()

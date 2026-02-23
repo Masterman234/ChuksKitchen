@@ -9,7 +9,10 @@ public interface IUserRepository
     Task<User?> GetByIdAsync(Guid id);
     Task<User?> GetByEmailAsync(string email);
     Task<User?> GetByPhone(string phone);
+    Task<User?> GetByReferralCodeAsync(string code);
     Task AddAsync(User user);
     Task Update(User user);
     Task Remove(User user);
+   
+
 }

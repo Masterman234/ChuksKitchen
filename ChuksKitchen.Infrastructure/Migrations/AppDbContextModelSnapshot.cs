@@ -93,6 +93,10 @@ namespace ChuksKitchen.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsAvailable")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
@@ -115,6 +119,8 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("Name");
 
                     b.ToTable("FoodItems");
                 });
@@ -199,7 +205,7 @@ namespace ChuksKitchen.Infrastructure.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -212,8 +218,21 @@ namespace ChuksKitchen.Infrastructure.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReferralCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ReferredByUserId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Role")
@@ -226,6 +245,8 @@ namespace ChuksKitchen.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("ReferredByUserId");
 
                     b.ToTable("Users");
                 });
@@ -339,6 +360,16 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("ChuksKitchen.Domain.Entities.User", b =>
+                {
+                    b.HasOne("ChuksKitchen.Domain.Entities.User", "ReferredByUser")
+                        .WithMany("ReferredUsers")
+                        .HasForeignKey("ReferredByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ReferredByUser");
+                });
+
             modelBuilder.Entity("UserOtp", b =>
                 {
                     b.HasOne("ChuksKitchen.Domain.Entities.User", "User")
@@ -374,6 +405,8 @@ namespace ChuksKitchen.Infrastructure.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Otps");
+
+                    b.Navigation("ReferredUsers");
                 });
 #pragma warning restore 612, 618
         }

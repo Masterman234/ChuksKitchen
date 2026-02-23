@@ -31,10 +31,18 @@ public class UserService : IUserService
                 return (BaseResponseModel<UserDto>.FailureResponse("Invalid user data."));
             }
 
+            // Normalize email
+            var normalizedEmail = string.IsNullOrWhiteSpace(request.Email)? null: request.Email.Trim().ToLowerInvariant();
+
             // Ensure at least one identifier is provided
             if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.Phone))
             {
                 return BaseResponseModel<UserDto>.FailureResponse("Either Email or Phone must be provided.");
+            }
+            // Validate phone
+            if (!string.IsNullOrWhiteSpace(request.Phone) && !PhoneValidator.IsValidNigerianPhone(request.Phone))
+            {
+                return BaseResponseModel<UserDto>.FailureResponse("Invalid Nigerian phone number format.");
             }
 
             // Check if email exists (only if provided)
@@ -44,7 +52,7 @@ public class UserService : IUserService
                 if (existByEmail != null)
                 {
                     return BaseResponseModel<UserDto>.FailureResponse("Email is already registered.");
-                } 
+                }
             }
             // Check if phone exists (only if provided)
             if (!string.IsNullOrWhiteSpace(request.Phone))
@@ -53,16 +61,38 @@ public class UserService : IUserService
                 if (existByPhone != null)
                 {
                     return BaseResponseModel<UserDto>.FailureResponse("Phone number is already registered.");
-                } 
+                }
             }
+
+            // Handle optional referral code
+            Guid? referredByUserId = null;
+            if (!string.IsNullOrWhiteSpace(request.ReferralCode))
+            {
+                var referringUser = await _userRepository.GetByReferralCodeAsync(request.ReferralCode);
+                if (referringUser == null)
+                {
+                    return BaseResponseModel<UserDto>.FailureResponse("Invalid referral code.");
+                }
+                referredByUserId = referringUser.Id;
+            }
+            // Ensure unique referral code generation
+            string referralCode;
+            do
+            {
+                referralCode = ReferralCodeGenerator.Generate();
+            }
+            while (await _userRepository.GetByReferralCodeAsync(referralCode) != null);
 
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                FullName = request.FullName,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 Email = request.Email,
                 Phone = request.Phone,
                 Role = request.Role,
+                ReferralCode = referralCode,
+                ReferredByUserId = referredByUserId,
                 IsVerified = false,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -73,24 +103,12 @@ public class UserService : IUserService
             //Create Cart automatically for the user
             await _cartRepository.AddAsync(new Cart { UserId = user.Id, CreatedAt = DateTime.UtcNow });
 
-            // Decide where to send OTP (prefer email if both exist)
-            string? otpDestination = null;
-
-            if (!string.IsNullOrWhiteSpace(user.Email))
-            {
-                otpDestination = user.Email;
-            }
-            else if (!string.IsNullOrWhiteSpace(user.Phone))
-            {
-                otpDestination = user.Phone;
-            }
-
+            // OTP destination (prefer email)
+            string? otpDestination = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : user.Phone;
             if (string.IsNullOrWhiteSpace(otpDestination))
             {
                 return BaseResponseModel<UserDto>.FailureResponse("No email or phone available for OTP.");
-            }
-
-            Console.WriteLine("CALLING OTP SERVICE NOW");
+            } 
 
             //Generate OTP for email or phone verification via OtpService
             var otpResult = await _userOtpService.GenerateOtpAsync(new CreateUserOtpDto(user.Id, otpDestination));
@@ -100,9 +118,10 @@ public class UserService : IUserService
                 return BaseResponseModel<UserDto>.FailureResponse(otpResult.Message);
             }
 
-            var dto = new UserDto(user.Id, user.FullName, user.Email, user.Phone, user.Role);
+            // Map to DTO
+            var dto = new UserDto(user.Id, user.FirstName, user.LastName, user.Email, user.Phone, user.ReferralCode, user.ReferredByUserId, user.Role);
 
-            return BaseResponseModel<UserDto>.SuccessResponse(dto, "User registered successfully.");
+            return BaseResponseModel<UserDto>.SuccessResponse(dto, "User registered successfully. Please verify OTP to activate account.");
 
         }
         catch (Exception)
@@ -122,18 +141,9 @@ public class UserService : IUserService
             }
 
             // Find user by email or phone
-            User? user = null;
-
-            if (emailOrPhone.Contains("@"))
-            {
-                // Likely an email
-                user = await _userRepository.GetByEmailAsync(emailOrPhone);
-            }
-            else
-            {
-                // Likely a phone
-                user = await _userRepository.GetByPhone(emailOrPhone);
-            }
+            User? user = emailOrPhone.Contains("@")
+                ? await _userRepository.GetByEmailAsync(emailOrPhone.Trim().ToLowerInvariant())
+                : await _userRepository.GetByPhone(emailOrPhone);
 
             if (user == null)
             {
@@ -170,7 +180,7 @@ public class UserService : IUserService
         try
         {
             var users = await _userRepository.GetAllUsersAsync();
-            var userDtos = users.Select(u => new UserDto(u.Id, u.FullName, u.Email,u.Phone, u.Role));
+            var userDtos = users.Select(u => new UserDto(u.Id, u.FirstName, u.LastName, u.Email, u.Phone, u.ReferralCode, u.ReferredByUserId, u.Role));
 
             return BaseResponseModel<IEnumerable<UserDto>>.SuccessResponse(userDtos, "Users retrieved successfully.");
         }
@@ -189,15 +199,38 @@ public class UserService : IUserService
                 return BaseResponseModel<Guid>.FailureResponse("Invalid user data.");
             }
 
+
             var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
             {
-                if (user == null)
+                return BaseResponseModel<Guid>.FailureResponse("User not found.");
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(request.Email))
+            {
+
+                var existing = await _userRepository.GetByEmailAsync(request.Email);
+                if (existing != null && existing.Id != id)
                 {
-                    return BaseResponseModel<Guid>.FailureResponse("User not found.");
+                    return BaseResponseModel<Guid>.FailureResponse("Email is already in use.");
                 }
             }
 
-            user.FullName = request.FullName;
+            if (!string.IsNullOrWhiteSpace(request.Phone))
+            {
+                var existing = await _userRepository.GetByPhone(request.Phone);
+                if (existing != null && existing.Id != id)
+                {
+                    return BaseResponseModel<Guid>.FailureResponse("Phone number is already in use.");
+                }
+            }
+
+            // Normalize email
+            var normalizedEmail = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim().ToLowerInvariant();
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
             user.Email = request.Email;
             user.Role = request.Role;
             user.UpdatedAt = DateTime.UtcNow;
@@ -219,16 +252,15 @@ public class UserService : IUserService
         try
         {
             var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
             {
-                if (user == null)
-                {
-                    return BaseResponseModel<bool>.FailureResponse("User not found.");
-                }
-
-                await _userRepository.Remove(user);
-
-                return BaseResponseModel<bool>.SuccessResponse(true, "User deleted successfully.");
+                return BaseResponseModel<bool>.FailureResponse("User not found.");
             }
+
+            await _userRepository.Remove(user);
+
+            return BaseResponseModel<bool>.SuccessResponse(true, "User deleted successfully.");
+
         }
         catch (Exception)
         {
@@ -249,9 +281,12 @@ public class UserService : IUserService
             // Map User entity to UserDto
             var userDto = new UserDto(
                 user.Id,
-                user.FullName,
+                user.FirstName,
+                user.LastName,
                 user.Email,
                 user.Phone,
+                user.ReferralCode,
+                user.ReferredByUserId,
                 user.Role
                 );
 

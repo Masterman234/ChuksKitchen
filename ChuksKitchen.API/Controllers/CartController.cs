@@ -39,7 +39,7 @@ public class CartController : ControllerBase
         var result = await _cartService.AddItemAsync(userId, foodItemId, quantity);
         if (!result.Success)
         {
-            return NotFound(result);
+            return BadRequest(result);
         }
         return Ok(result);
     }

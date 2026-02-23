@@ -19,14 +19,14 @@ public class UserController : ControllerBase
 
     // Signup endpoint
     [HttpPost("signup")]
-    [ProducesResponseType(typeof(BaseResponseModel<UserDto>), 200)]
+    [ProducesResponseType(typeof(BaseResponseModel<UserDto>), 201)]
     [ProducesResponseType(typeof(BaseResponseModel<UserDto>), 400)]
     public async Task<IActionResult> SignUp([FromBody] UserCreateDto request)
     {
         var result = await _userService.SignUpAsync(request);
         if (result.Success)
         {
-            return Ok(result);
+            return CreatedAtAction(nameof(GetUserById), new { id = result.Data.Id }, result);
         }
         return BadRequest(result);
     }
@@ -60,11 +60,14 @@ public class UserController : ControllerBase
     // Update user
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(BaseResponseModel<Guid>), 200)]
-    [ProducesResponseType(typeof(BaseResponseModel<Guid>), 400)]
+    [ProducesResponseType(typeof(BaseResponseModel<Guid>), 404)]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto request)
     {
         var response = await _userService.UpdateUserAsync(id, request);
-        if (!response.Success) return BadRequest(response);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
         return Ok(response);
     }
 
@@ -75,7 +78,10 @@ public class UserController : ControllerBase
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         var response = await _userService.DeleteUserAsync(id);
-        if (!response.Success) return BadRequest(response);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
         return Ok(response);
     }
 }

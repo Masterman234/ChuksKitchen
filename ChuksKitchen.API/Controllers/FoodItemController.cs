@@ -54,12 +54,13 @@ public class FoodItemController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(BaseResponseModel<FoodItemDto>), 200)]
     [ProducesResponseType(typeof(BaseResponseModel<FoodItemDto>), 400)]
-    public async Task<IActionResult> Create([FromBody] FoodItemCreateDto dto, [FromQuery] Guid adminUserId)
+    public async Task<IActionResult> Create([FromForm] FoodItemCreateDto dto, [FromQuery] Guid adminUserId)
     {
         var result = await _foodItemService.AddFoodItemAsync(dto, adminUserId);
         if (result.Success)
         {
-            return Ok(result);
+            return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result);
+
         }
         return BadRequest(result);
     }
@@ -68,7 +69,7 @@ public class FoodItemController : ControllerBase
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(BaseResponseModel<FoodItemDto>), 200)]
     [ProducesResponseType(typeof(BaseResponseModel<FoodItemDto>), 400)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] FoodItemUpdateDto dto, [FromQuery] Guid adminUserId)
+    public async Task<IActionResult> Update(Guid id, [FromForm] FoodItemUpdateDto dto, [FromQuery] Guid adminUserId)
     {
         var result = await _foodItemService.UpdateFoodItemAsync(id, dto, adminUserId);
         if (result.Success)
