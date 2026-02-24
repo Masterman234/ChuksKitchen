@@ -38,7 +38,7 @@ The backend follows a layered architecture:
 
 ## 2. Flow Explanation
 ![Registration Flow](./Diagram/flowChart.png)
-![Registration Flow](./Diagram/rating-order-flow.png)
+![Order and Rating Flow](./Diagram/rating-order-flow.png)
 ### 2.1 User Registration & OTP Verification Flow
 
 ### Step-by-Step Flow
