@@ -28,6 +28,7 @@ The backend follows a layered architecture:
 5. The user adds items to their cart.
 6. The user places an order.
 7. The system stores the order and preserves pricing history.
+8. The user can rate food items they have ordered.
 
 ## Admins can:
 
@@ -101,6 +102,39 @@ PriceAtOrder ensures historical pricing integrity.
 OrderItem separates transactional data from menu data.
 Soft delete prevents accidental data loss.
 
+## 2.4 Rating Flow
+### Step-by-Step Flow
+
+1. User submits a rating for a food item.
+
+2. System validates:
+
+- User exists
+
+- User is verified
+
+- Food item exists
+
+- User has previously ordered the food item
+
+- User has not already rated the food item
+
+- Score is between 1 and 5
+
+3. Rating is saved to the database.
+
+### Design Decisions
+
+- Only verified users can rate.
+
+- Users can only rate food items they have ordered.
+
+- Duplicate ratings prevented using a unique constraint (UserId + FoodItemId).
+
+- Score validation enforced at domain level.
+
+- Soft delete supported.
+
 ## Edge Case Handling
 
 | Scenario | Handling Strategy |
@@ -112,6 +146,8 @@ Soft delete prevents accidental data loss.
 | Food marked unavailable | Cannot add to cart |
 | Price change after order | OrderItem keeps original price |
 | Multiple OTP requests | Multiple records supported |
+| Duplicate rating | Blocked via unique constraint |
+| Rating without order | Rejected |
 | Data deletion | Soft delete used |
 
 ## 4.1 Entity Relationship Diagram
@@ -141,8 +177,14 @@ Food item can appear in multiple carts.
 Order → OrderItems (1:M)
 Order contains multiple items.
 
+User → Rating (1:M)
+A user can submit multiple ratings.
+
 FoodItem → OrderItems (1:M)
 Food item can appear in multiple orders.
+
+FoodItem → Rating (1:M)
+A food item can receive multiple ratings.
 
 User → User (Self Reference)
 Implements referral tracking.
@@ -160,28 +202,53 @@ Payment integration is outside current scope.
 
 If the system scales significantly, the following improvements would be implemented:
 6.1. Database Optimization
-Index Email, Phone, ReferralCode
-Index foreign keys
-Use database read replicas
+- Index Email, Phone, ReferralCode
+- Index foreign keys
+- Use database read replicas
+- 
 6.2 Caching
-Cache frequently accessed FoodItems
-Cache user session data
-6.3 Background Processing
-Cleanup expired OTPs
-Archive completed orders
-Use background job processor (e.g., Hangfire)
-6.4 Architecture Evolution
-Introduce microservices:
-User Service
-Order Service
-Food Service
-Introduce message queue for order processing
-6.5 Security Enhancements
-Implement JWT authentication
-Add rate limiting for OTP requests
-Add role-based authorization middleware
+- Cache frequently accessed FoodItems
+- Cache user session data
 
-## Project Structure
+6.3 Background Processing
+- Cleanup expired OTPs
+- Archive completed orders
+- Use background job processor (e.g., Hangfire)
+ 
+6.4 Architecture Evolution
+- Introduce microservices:
+- User Service
+- Order Service
+- Food Service
+- Introduce message queue for order processing
+
+6.5 Security Enhancements
+- Implement JWT authentication
+- Add rate limiting for OTP requests
+- Add role-based authorization middleware
+
+## 7. API Endpoints Overview
+
+### Users
+POST /api/users/register
+POST /api/users/verify-otp
+
+### Food Items
+POST /api/fooditems
+GET /api/fooditems
+
+### Cart
+POST /api/cart/add
+GET /api/cart
+
+### Orders
+POST /api/orders
+GET /api/orders/{id}
+
+### Ratings
+POST /api/ratings
+
+## 8. Project Structure
 ChuksKitchen
 │
 ├── Domain
@@ -189,15 +256,13 @@ ChuksKitchen
 ├── Infrastructure
 └── API
 
-## 7. Technology Stack
+## 9. Technology Stack
+- .NET (ASP.NET Core)  
+- Entity Framework Core
+- SQL Database
+- Clean Architecture Pattern
 
-.NET (ASP.NET Core)  
- Entity Framework Core
-SQL Database
-Clean Architecture Pattern
-
-## 8. Submission Artifacts
-
+## 10. Submission Artifacts
 Working API (GitHub Repository)
 README Documentation
 ERD (PNG)
