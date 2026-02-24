@@ -37,9 +37,9 @@ The backend follows a layered architecture:
 - Mark items unavailable
 
 ## 2. Flow Explanation
-
-### 2.1 User Registration & OTP Verification Flow
 ![Registration Flow](./Diagram/flowChart.png)
+![Registration Flow](./Diagram/rating-order-flow.png)
+### 2.1 User Registration & OTP Verification Flow
 
 ### Step-by-Step Flow
 
